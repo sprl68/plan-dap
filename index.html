@@ -580,7 +580,7 @@ button.ck.is-checked .ck-title{ color:var(--ink-2); }
 
     <div class="card">
       <h3 class="card-t">Suplementos</h3>
-      <p class="card-s">Receta del 4 de noviembre de 2026.</p>
+      <p class="card-s">Receta del 20 de noviembre de 2026 (consulta del 18).</p>
       <ul class="slist">
         <li><b>Probiovance S3</b><span>1 cápsula cada mañana, en ayuno</span></li>
         <li><b>Oligovance</b><span>1 sobre al día, en el desayuno. Puede diluirse en tu agua para tomar más.</span></li>
@@ -588,6 +588,8 @@ button.ck.is-checked .ck-title{ color:var(--ink-2); }
         <li><b>Zinc 20 mg + Selenio 100 µg</b><span>1 tableta cada mañana</span></li>
         <li><b>Magvance</b><span>1 cada noche</span></li>
         <li><b>Hidroferol (calcifediol) 0.266 mg</b><span>1 cápsula a la semana por 6 semanas; después 1 cada 15 días hasta completar 3 meses</span></li>
+        <li><b>Cardispan (levocarnitina) 1 g</b><span>1 tableta masticable, 1 hora antes o después del desayuno, la comida y la cena</span></li>
+        <li><b>MCT Oil</b><span>1 cápsula con el desayuno, la comida y la cena</span></li>
       </ul>
     </div>
 
@@ -633,6 +635,8 @@ button.ck.is-checked .ck-title{ color:var(--ink-2); }
       <p class="card-s" id="inicio-note" style="margin:8px 0 14px"></p>
       <label class="field" for="fase2"><span>Inicio de la fase mixta</span><input type="date" id="fase2"></label>
       <p class="card-s" style="margin:8px 0 14px">Los días anteriores se evalúan con las reglas de la fase estricta.</p>
+      <label class="field" for="supl-desde"><span>Cardispan y MCT desde</span><input type="date" id="supl-desde"></label>
+      <p class="card-s" style="margin:8px 0 14px">Antes de esa fecha no cuentan como pendientes en el reporte.</p>
       <label class="field" for="paciente"><span>Nombre en el reporte</span><input type="text" id="paciente" maxlength="80" autocomplete="off" placeholder="Tu nombre"></label>
     </div>
 
@@ -731,12 +735,12 @@ const $ = s => document.querySelector(s);
 
 /* ================= El plan (hojas de la Dra. Cantú · DAP fase mixta · receta del 4 nov 2026) ================= */
 const TOMAS = [
-  { id:'desayuno', nombre:'Desayuno',     hora:'07:00', opciones:['Dynovance','Protéifine'], sugerido:'Dynovance',  verduras:false, animal:false, supl:['probio','omegaAM','oligo','zinc'] },
+  { id:'desayuno', nombre:'Desayuno',     hora:'07:00', opciones:['Dynovance','Protéifine'], sugerido:'Dynovance',  verduras:false, animal:false, supl:['probio','omegaAM','oligo','zinc','mctAM','cardAM'] },
   { id:'mm1',      nombre:'Media mañana', hora:'10:00', opciones:['Protéifine','Dynovance'], sugerido:'Protéifine', verduras:false, animal:false, supl:[] },
   { id:'mm2',      nombre:'Media mañana', hora:'12:30', opciones:['Protéifine','Dynovance'], sugerido:'Protéifine', verduras:false, animal:false, supl:[] },
-  { id:'comida',   nombre:'Comida',       hora:'15:30', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:[] },
+  { id:'comida',   nombre:'Comida',       hora:'15:30', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:['mctCom','cardCom'] },
   { id:'merienda', nombre:'Merienda',     hora:'18:00', opciones:['Sérovance','Protéifine'], sugerido:'Sérovance',  verduras:false, animal:false, supl:[] },
-  { id:'cena',     nombre:'Cena',         hora:'21:00', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:['omegaPM','magvance'] }
+  { id:'cena',     nombre:'Cena',         hora:'21:00', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:['omegaPM','magvance','mctPM','cardPM'] }
 ];
 const TOMA_IDS = TOMAS.map(t => t.id);
 const SUPL = {
@@ -745,7 +749,13 @@ const SUPL = {
   oligo:    { nombre:'Oligovance',     corto:'Oligovance',  dosis:'1 sobre',   nota:'Puedes diluirlo en tu agua del día' },
   zinc:     { nombre:'Zinc 20 mg + Selenio 100 µg', corto:'Zinc+Selenio', dosis:'1 tableta', nota:'' },
   omegaPM:  { nombre:'Omega 3 EPA',    corto:'Omega 3',     dosis:'1 cápsula', nota:'' },
-  magvance: { nombre:'Magvance',       corto:'Magvance',    dosis:'1',         nota:'' }
+  magvance: { nombre:'Magvance',       corto:'Magvance',    dosis:'1',         nota:'' },
+  mctAM:    { nombre:'MCT Oil',        corto:'MCT',         dosis:'1 cápsula', nota:'Con el desayuno' },
+  cardAM:   { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', nota:'1 hora antes o después del desayuno' },
+  mctCom:   { nombre:'MCT Oil',        corto:'MCT',         dosis:'1 cápsula', nota:'Con la comida' },
+  cardCom:  { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', nota:'1 hora antes o después de la comida' },
+  mctPM:    { nombre:'MCT Oil',        corto:'MCT',         dosis:'1 cápsula', nota:'Con la cena' },
+  cardPM:   { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', nota:'1 hora antes o después de la cena' }
 };
 const SUPL_KEYS = Object.keys(SUPL);
 const HIDRO = { nombre:'Hidroferol (calcifediol) 0.266 mg', corto:'Hidroferol', dosis:'1 cápsula', total:10 };
@@ -776,6 +786,8 @@ const RULES = {
   2: { fase:2, nombre:'Fase mixta',    productos:5, animal:true,  libresMax:null, restrMax:200, restrStep:50, zinc:true,  hidro:true }
 };
 const FASE2_DEFAULT = '2026-11-04';
+const SUPL_NOV_DEFAULT = '2026-11-21';
+const SUPL_NOV = ['mctAM','cardAM','mctCom','cardCom','mctPM','cardPM'];
 
 const fmtNum = v => String(Math.round(v * 100) / 100);
 const fmtTazas = v => { const w = Math.floor(v + 1e-9), f = Math.round((v - w) * 100) / 100; if (f === 0) return String(w); if (f === 0.5) return (w ? w : '') + '½'; return fmtNum(v); };
@@ -873,7 +885,9 @@ const PRODS = [
   { n:'Omega 3 EPA', k:['omega','omega 3','epa'], v:'si', d:'1 cápsula en la mañana y 1 en la noche.' },
   { n:'Zinc 20 mg + Selenio 100 µg', k:['zinc','selenio','gluconato'], v:'si', d:'1 tableta cada mañana.' },
   { n:'Magvance', k:['magvance'], v:'si', d:'1 cada noche.' },
-  { n:'Hidroferol (calcifediol)', k:['hidroferol','calcifediol','vitamina d'], v:'si', d:'1 cápsula a la semana por 6 semanas; después 1 cada 15 días hasta completar 3 meses. La app te lo muestra el día que toca.' }
+  { n:'Hidroferol (calcifediol)', k:['hidroferol','calcifediol','vitamina d'], v:'si', d:'1 cápsula a la semana por 6 semanas; después 1 cada 15 días hasta completar 3 meses. La app te lo muestra el día que toca.' },
+  { n:'Cardispan (levocarnitina) 1 g', k:['cardispan','levocarnitina','carnitina'], v:'si', d:'1 tableta masticable, 1 hora antes o después del desayuno, la comida y la cena.' },
+  { n:'MCT Oil', k:['mct','mct oil','aceite mct'], v:'si', d:'1 cápsula con el desayuno, la comida y la cena.' }
 ];
 
 /* Ideas para el hambre (solo con lo que permiten tus hojas) */
@@ -990,7 +1004,7 @@ function omitDesc(o){
 }
 
 /* ================= Estado ================= */
-function defaultConfig(){ const horas = {}; TOMAS.forEach(t => { horas[t.id] = t.hora; }); return { horas, inicio:null, paciente:DEFAULT_PACIENTE, fase2Desde:FASE2_DEFAULT, hidroferol:{ inicio:FASE2_DEFAULT, hechas:[] } }; }
+function defaultConfig(){ const horas = {}; TOMAS.forEach(t => { horas[t.id] = t.hora; }); return { horas, inicio:null, paciente:DEFAULT_PACIENTE, fase2Desde:FASE2_DEFAULT, suplDesde:SUPL_NOV_DEFAULT, hidroferol:{ inicio:FASE2_DEFAULT, hechas:[] } }; }
 function normalizeConfig(raw){
   const c = defaultConfig();
   if (!raw || typeof raw !== 'object') return c;
@@ -998,6 +1012,7 @@ function normalizeConfig(raw){
   if (isKey(raw.inicio)) c.inicio = raw.inicio;
   if (str(raw.paciente, 80)) c.paciente = str(raw.paciente, 80);
   if (isKey(raw.fase2Desde)) c.fase2Desde = raw.fase2Desde;
+  if (isKey(raw.suplDesde)) c.suplDesde = raw.suplDesde;
   const h = raw.hidroferol;
   if (h && typeof h === 'object'){ if (isKey(h.inicio)) c.hidroferol.inicio = h.inicio; if (Array.isArray(h.hechas)) c.hidroferol.hechas = h.hechas.filter(isKey).slice(0, 20); }
   return c;
@@ -1058,7 +1073,7 @@ const isToday = () => viewKey === todayKey();
 const pacienteName = () => config.paciente || 'Paciente';
 const faseOf = key => (config.fase2Desde && key >= config.fase2Desde) ? 2 : 1;
 const rulesOf = key => RULES[faseOf(key)];
-const suplKeysFor = key => SUPL_KEYS.filter(k => k !== 'zinc' || rulesOf(key).zinc);
+const suplKeysFor = key => SUPL_KEYS.filter(k => (k !== 'zinc' || rulesOf(key).zinc) && (SUPL_NOV.indexOf(k) < 0 || key >= (config.suplDesde || SUPL_NOV_DEFAULT)));
 const tomaSupl = (t, key) => { const ks = suplKeysFor(key); return t.supl.filter(k => ks.indexOf(k) >= 0); };
 const tomaMin = id => hhmmToMin(config.horas[id]);
 const orderedTomas = () => TOMAS.slice().sort((a, b) => tomaMin(a.id) - tomaMin(b.id));
@@ -1927,6 +1942,7 @@ function renderPlan(force){
   fill('#inicio', config.inicio || ''); const ini = $('#inicio'); if (ini) ini.max = todayKey();
   fill('#fase2', config.fase2Desde || '');
   fill('#paciente', config.paciente);
+  fill('#supl-desde', config.suplDesde || '');
   fill('#hidro-inicio', config.hidroferol.inicio || '');
   const note = $('#inicio-note'); if (note) note.textContent = config.inicio ? 'Hoy es tu día ' + dayNumber(todayKey()) + '. Si llenas días anteriores, se ajusta sola.' : 'Se guarda sola el primer día que marques algo.';
   const t = todayKey(), s = hidroSchedule(), next = s.find(x => !x.hecha), done = s.filter(x => x.hecha).length;
@@ -2130,6 +2146,7 @@ function wire(){
     if (t.id === 'inicio' && isKey(t.value)){ config.inicio = t.value > todayKey() ? todayKey() : t.value; saveConfig(); renderAll(); renderPlan(true); }
     if (t.id === 'fase2' && isKey(t.value)){ config.fase2Desde = t.value; saveConfig(); lastReport = null; rDesde = ''; renderAll(); renderPlan(true); }
     if (t.id === 'hidro-inicio' && isKey(t.value)){ setHidroInicio(t.value); renderAll(); renderPlan(true); }
+    if (t.id === 'supl-desde' && isKey(t.value)){ config.suplDesde = t.value; saveConfig(); lastReport = null; renderAll(); renderPlan(true); }
     if (t.id === 'paciente'){ config.paciente = str(t.value, 80) || DEFAULT_PACIENTE; saveConfig(); renderPlan(true); }
     if (t.id === 'bk-file'){ const f = t.files && t.files[0]; t.value = ''; importBackup(f); }
     if (t.id === 'r-desde' || t.id === 'r-hasta'){

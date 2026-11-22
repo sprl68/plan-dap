@@ -1,5 +1,5 @@
-/* Mi plan DAP · service worker · build f9984eb9ec */
-const CACHE = 'plan-dap-f9984eb9ec';
+/* Mi plan DAP · service worker · build 56ed0a85a9 */
+const CACHE = 'plan-dap-56ed0a85a9';
 const ASSETS = ["./", "./index.html", "./manifest.webmanifest", "./vendor/jspdf.umd.min.js", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/apple-touch-icon.png", "./fonts/bricolage-grotesque-latin-wght-normal.woff2", "./fonts/figtree-latin-wght-normal.woff2"];
 self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
