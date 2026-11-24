@@ -174,6 +174,13 @@ button.ck{ border-radius:12px; }
 button.ck.is-checked .ck-title{ color:var(--ink-2); }
 .info-ico{ flex:none; width:24px; height:24px; display:grid; place-items:center; color:var(--accent); }
 .info-ico .ico{ width:20px; height:20px; }
+.auxbox{ display:flex; flex-direction:column; gap:8px; background:var(--bg); border-radius:14px; padding:12px; }
+.aux-t{ font-weight:650; font-size:14.5px; display:flex; flex-direction:column; gap:2px; }
+.aux-t span{ font-weight:500; font-size:12.5px; color:var(--ink-2); }
+.aux-row{ display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap; }
+.aux-meal{ font-size:14px; font-weight:600; }
+.aux-row .chips{ margin-top:0; }
+.aux-warn{ margin:0; font-size:13px; color:var(--warn); font-weight:600; }
 
 /* Product chips */
 .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
@@ -465,6 +472,7 @@ button.ck.is-checked .ck-title{ color:var(--ink-2); }
     <div class="card xcard" id="xcard">
       <p class="card-s" style="margin:0">Anota lo que comas o tomes fuera de tu lista, sin pena: a tu Dra. le sirve para ajustar el plan.</p>
       <ul class="xlist" id="extras-list" hidden></ul>
+      <div class="auxbox" id="auxbox"></div>
       <div class="xform" id="xform" hidden>
         <div class="xform-t" id="xform-t">Anotar algo fuera del plan</div>
         <label class="fld" for="x-que"><span>Qué fue</span><input id="x-que" type="text" maxlength="120" placeholder="Ej. 1 tortilla, 1 cerveza, fruta" autocomplete="off"></label>
@@ -588,9 +596,14 @@ button.ck.is-checked .ck-title{ color:var(--ink-2); }
         <li><b>Zinc 20 mg + Selenio 100 µg</b><span>1 tableta cada mañana</span></li>
         <li><b>Magvance</b><span>1 cada noche</span></li>
         <li><b>Hidroferol (calcifediol) 0.266 mg</b><span>1 cápsula a la semana por 6 semanas; después 1 cada 15 días hasta completar 3 meses</span></li>
-        <li><b>Cardispan (levocarnitina) 1 g</b><span>1 tableta masticable, 1 hora antes o después del desayuno, la comida y la cena</span></li>
-        <li><b>MCT Oil</b><span>1 cápsula con el desayuno, la comida y la cena</span></li>
       </ul>
+      <div class="sheet">
+        <div class="sheet-t">Auxiliares: solo cuando comas carbohidratos u otra cosa fuera del plan</div>
+        <ul class="slist">
+          <li><b>Cardispan (levocarnitina) 1 g</b><span>1 tableta masticable, 1 hora antes o después de esa comida (desayuno, comida o cena)</span></li>
+          <li><b>MCT Oil</b><span>1 cápsula con esa comida</span></li>
+        </ul>
+      </div>
     </div>
 
     <div class="card">
@@ -635,8 +648,6 @@ button.ck.is-checked .ck-title{ color:var(--ink-2); }
       <p class="card-s" id="inicio-note" style="margin:8px 0 14px"></p>
       <label class="field" for="fase2"><span>Inicio de la fase mixta</span><input type="date" id="fase2"></label>
       <p class="card-s" style="margin:8px 0 14px">Los días anteriores se evalúan con las reglas de la fase estricta.</p>
-      <label class="field" for="supl-desde"><span>Cardispan y MCT desde</span><input type="date" id="supl-desde"></label>
-      <p class="card-s" style="margin:8px 0 14px">Antes de esa fecha no cuentan como pendientes en el reporte.</p>
       <label class="field" for="paciente"><span>Nombre en el reporte</span><input type="text" id="paciente" maxlength="80" autocomplete="off" placeholder="Tu nombre"></label>
     </div>
 
@@ -735,12 +746,12 @@ const $ = s => document.querySelector(s);
 
 /* ================= El plan (hojas de la Dra. Cantú · DAP fase mixta · receta del 4 nov 2026) ================= */
 const TOMAS = [
-  { id:'desayuno', nombre:'Desayuno',     hora:'07:00', opciones:['Dynovance','Protéifine'], sugerido:'Dynovance',  verduras:false, animal:false, supl:['probio','omegaAM','oligo','zinc','mctAM','cardAM'] },
+  { id:'desayuno', nombre:'Desayuno',     hora:'07:00', opciones:['Dynovance','Protéifine'], sugerido:'Dynovance',  verduras:false, animal:false, supl:['probio','omegaAM','oligo','zinc'], aux:true },
   { id:'mm1',      nombre:'Media mañana', hora:'10:00', opciones:['Protéifine','Dynovance'], sugerido:'Protéifine', verduras:false, animal:false, supl:[] },
   { id:'mm2',      nombre:'Media mañana', hora:'12:30', opciones:['Protéifine','Dynovance'], sugerido:'Protéifine', verduras:false, animal:false, supl:[] },
-  { id:'comida',   nombre:'Comida',       hora:'15:30', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:['mctCom','cardCom'] },
+  { id:'comida',   nombre:'Comida',       hora:'15:30', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:[], aux:true },
   { id:'merienda', nombre:'Merienda',     hora:'18:00', opciones:['Sérovance','Protéifine'], sugerido:'Sérovance',  verduras:false, animal:false, supl:[] },
-  { id:'cena',     nombre:'Cena',         hora:'21:00', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:['omegaPM','magvance','mctPM','cardPM'] }
+  { id:'cena',     nombre:'Cena',         hora:'21:00', opciones:['Protéifine','Sérovance'], sugerido:'Protéifine', verduras:true,  animal:true,  supl:['omegaPM','magvance'], aux:true }
 ];
 const TOMA_IDS = TOMAS.map(t => t.id);
 const SUPL = {
@@ -749,14 +760,16 @@ const SUPL = {
   oligo:    { nombre:'Oligovance',     corto:'Oligovance',  dosis:'1 sobre',   nota:'Puedes diluirlo en tu agua del día' },
   zinc:     { nombre:'Zinc 20 mg + Selenio 100 µg', corto:'Zinc+Selenio', dosis:'1 tableta', nota:'' },
   omegaPM:  { nombre:'Omega 3 EPA',    corto:'Omega 3',     dosis:'1 cápsula', nota:'' },
-  magvance: { nombre:'Magvance',       corto:'Magvance',    dosis:'1',         nota:'' },
-  mctAM:    { nombre:'MCT Oil',        corto:'MCT',         dosis:'1 cápsula', nota:'Con el desayuno' },
-  cardAM:   { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', nota:'1 hora antes o después del desayuno' },
-  mctCom:   { nombre:'MCT Oil',        corto:'MCT',         dosis:'1 cápsula', nota:'Con la comida' },
-  cardCom:  { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', nota:'1 hora antes o después de la comida' },
-  mctPM:    { nombre:'MCT Oil',        corto:'MCT',         dosis:'1 cápsula', nota:'Con la cena' },
-  cardPM:   { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', nota:'1 hora antes o después de la cena' }
+  magvance: { nombre:'Magvance',       corto:'Magvance',    dosis:'1',         nota:'' }
 };
+/* Auxiliares: solo cuando se come algo fuera del plan (carbohidratos, etc.) */
+const AUX = {
+  card: { nombre:'Cardispan (levocarnitina) 1 g', corto:'Cardispan', dosis:'1 tableta masticable', cuando:'1 h antes o después' },
+  mct:  { nombre:'MCT Oil', corto:'MCT', dosis:'1 cápsula', cuando:'con esa comida' }
+};
+const AUX_KEYS = ['card', 'mct'];
+const AUX_MEALS = ['desayuno', 'comida', 'cena'];
+const LEGACY_AUX = { mctAM:['desayuno','mct'], cardAM:['desayuno','card'], mctCom:['comida','mct'], cardCom:['comida','card'], mctPM:['cena','mct'], cardPM:['cena','card'] };
 const SUPL_KEYS = Object.keys(SUPL);
 const HIDRO = { nombre:'Hidroferol (calcifediol) 0.266 mg', corto:'Hidroferol', dosis:'1 cápsula', total:10 };
 const HIDRO_DAYS = [0, 7, 14, 21, 28, 35, 49, 63, 77, 91];
@@ -786,8 +799,6 @@ const RULES = {
   2: { fase:2, nombre:'Fase mixta',    productos:5, animal:true,  libresMax:null, restrMax:200, restrStep:50, zinc:true,  hidro:true }
 };
 const FASE2_DEFAULT = '2026-11-04';
-const SUPL_NOV_DEFAULT = '2026-11-21';
-const SUPL_NOV = ['mctAM','cardAM','mctCom','cardCom','mctPM','cardPM'];
 
 const fmtNum = v => String(Math.round(v * 100) / 100);
 const fmtTazas = v => { const w = Math.floor(v + 1e-9), f = Math.round((v - w) * 100) / 100; if (f === 0) return String(w); if (f === 0.5) return (w ? w : '') + '½'; return fmtNum(v); };
@@ -886,8 +897,8 @@ const PRODS = [
   { n:'Zinc 20 mg + Selenio 100 µg', k:['zinc','selenio','gluconato'], v:'si', d:'1 tableta cada mañana.' },
   { n:'Magvance', k:['magvance'], v:'si', d:'1 cada noche.' },
   { n:'Hidroferol (calcifediol)', k:['hidroferol','calcifediol','vitamina d'], v:'si', d:'1 cápsula a la semana por 6 semanas; después 1 cada 15 días hasta completar 3 meses. La app te lo muestra el día que toca.' },
-  { n:'Cardispan (levocarnitina) 1 g', k:['cardispan','levocarnitina','carnitina'], v:'si', d:'1 tableta masticable, 1 hora antes o después del desayuno, la comida y la cena.' },
-  { n:'MCT Oil', k:['mct','mct oil','aceite mct'], v:'si', d:'1 cápsula con el desayuno, la comida y la cena.' }
+  { n:'Cardispan (levocarnitina) 1 g', k:['cardispan','levocarnitina','carnitina'], v:'si', d:'Auxiliar: solo cuando comas carbohidratos u otra cosa fuera del plan. 1 tableta masticable, 1 hora antes o después de esa comida.' },
+  { n:'MCT Oil', k:['mct','mct oil','aceite mct'], v:'si', d:'Auxiliar: solo cuando comas carbohidratos u otra cosa fuera del plan. 1 cápsula con esa comida.' }
 ];
 
 /* Ideas para el hambre (solo con lo que permiten tus hojas) */
@@ -946,6 +957,7 @@ const ICON = {
   chev:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>',
   leaf:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"/><path d="M5 19l8-8"/></svg>',
   chat:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5l1.3-3.8A7.8 7.8 0 1 1 8.5 19z"/></svg>',
+  pill:'<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><g transform="rotate(-40 12 12)"><rect x="3" y="8.5" width="18" height="7" rx="3.5"/><path d="M12 8.5v7"/></g></svg>',
   drop:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3 4 5.5 7 5.5 10a5.5 5.5 0 0 1-11 0c0-3 2.5-6 5.5-10z"/></svg>'
 };
 const BOX = '<span class="box" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
@@ -1004,7 +1016,7 @@ function omitDesc(o){
 }
 
 /* ================= Estado ================= */
-function defaultConfig(){ const horas = {}; TOMAS.forEach(t => { horas[t.id] = t.hora; }); return { horas, inicio:null, paciente:DEFAULT_PACIENTE, fase2Desde:FASE2_DEFAULT, suplDesde:SUPL_NOV_DEFAULT, hidroferol:{ inicio:FASE2_DEFAULT, hechas:[] } }; }
+function defaultConfig(){ const horas = {}; TOMAS.forEach(t => { horas[t.id] = t.hora; }); return { horas, inicio:null, paciente:DEFAULT_PACIENTE, fase2Desde:FASE2_DEFAULT, hidroferol:{ inicio:FASE2_DEFAULT, hechas:[] } }; }
 function normalizeConfig(raw){
   const c = defaultConfig();
   if (!raw || typeof raw !== 'object') return c;
@@ -1012,15 +1024,17 @@ function normalizeConfig(raw){
   if (isKey(raw.inicio)) c.inicio = raw.inicio;
   if (str(raw.paciente, 80)) c.paciente = str(raw.paciente, 80);
   if (isKey(raw.fase2Desde)) c.fase2Desde = raw.fase2Desde;
-  if (isKey(raw.suplDesde)) c.suplDesde = raw.suplDesde;
   const h = raw.hidroferol;
   if (h && typeof h === 'object'){ if (isKey(h.inicio)) c.hidroferol.inicio = h.inicio; if (Array.isArray(h.hechas)) c.hidroferol.hechas = h.hechas.filter(isKey).slice(0, 20); }
   return c;
 }
+function emptyAux(){ const a = {}; AUX_MEALS.forEach(m => { a[m] = { card:false, mct:false }; }); return a; }
+const auxCount = d => (d && d.aux) ? AUX_MEALS.reduce((n, m) => n + AUX_KEYS.filter(k => d.aux[m][k]).length, 0) : 0;
+const auxBy = (d, k) => (d && d.aux) ? AUX_MEALS.filter(m => d.aux[m][k]).length : 0;
 function emptyDay(key){
   const tomas = {}; TOMA_IDS.forEach(id => { tomas[id] = { hecho:false, producto:null, hora:null, omitida:false, omision:null, animal:null }; });
   const supl = {}; SUPL_KEYS.forEach(k => { supl[k] = false; });
-  const d = { fecha:key, tomas, supl, actividad:false, sueno:null, extras:[], nota:'' };
+  const d = { fecha:key, tomas, supl, aux:emptyAux(), actividad:false, sueno:null, extras:[], nota:'' };
   NUM_KEYS.forEach(k => { d[k] = 0; });
   return d;
 }
@@ -1041,6 +1055,8 @@ function normalizeDay(raw, key){
     }
   });
   SUPL_KEYS.forEach(k => { d.supl[k] = !!(raw.supl && raw.supl[k]); });
+  AUX_MEALS.forEach(m => AUX_KEYS.forEach(k => { d.aux[m][k] = !!(raw.aux && raw.aux[m] && raw.aux[m][k]); }));
+  if (raw.supl) Object.keys(LEGACY_AUX).forEach(lk => { if (raw.supl[lk]){ const mk = LEGACY_AUX[lk]; d.aux[mk[0]][mk[1]] = true; } });
   NUM_KEYS.forEach(k => { const v = Number(raw[k]); d[k] = isFinite(v) && v > 0 ? v : 0; });
   d.actividad = !!raw.actividad;
   d.sueno = (typeof raw.sueno === 'number' && isFinite(raw.sueno)) ? raw.sueno : null;
@@ -1052,7 +1068,7 @@ function normalizeDay(raw, key){
   return d;
 }
 function hasData(d){
-  return !!d && (TOMA_IDS.some(id => d.tomas[id].hecho || d.tomas[id].omitida || d.tomas[id].animal) || SUPL_KEYS.some(k => d.supl[k]) || NUM_KEYS.some(k => d[k] > 0)
+  return !!d && (TOMA_IDS.some(id => d.tomas[id].hecho || d.tomas[id].omitida || d.tomas[id].animal) || SUPL_KEYS.some(k => d.supl[k]) || auxCount(d) > 0 || NUM_KEYS.some(k => d[k] > 0)
     || d.actividad || d.sueno != null || d.extras.length > 0 || !!(d.nota && d.nota.trim()));
 }
 
@@ -1073,7 +1089,7 @@ const isToday = () => viewKey === todayKey();
 const pacienteName = () => config.paciente || 'Paciente';
 const faseOf = key => (config.fase2Desde && key >= config.fase2Desde) ? 2 : 1;
 const rulesOf = key => RULES[faseOf(key)];
-const suplKeysFor = key => SUPL_KEYS.filter(k => (k !== 'zinc' || rulesOf(key).zinc) && (SUPL_NOV.indexOf(k) < 0 || key >= (config.suplDesde || SUPL_NOV_DEFAULT)));
+const suplKeysFor = key => SUPL_KEYS.filter(k => k !== 'zinc' || rulesOf(key).zinc);
 const tomaSupl = (t, key) => { const ks = suplKeysFor(key); return t.supl.filter(k => ks.indexOf(k) >= 0); };
 const tomaMin = id => hhmmToMin(config.horas[id]);
 const orderedTomas = () => TOMAS.slice().sort((a, b) => tomaMin(a.id) - tomaMin(b.id));
@@ -1236,7 +1252,7 @@ function goToDay(key){
   if (key === viewKey) return;
   commitNota();
   if (saveTimer){ clearTimeout(saveTimer); flushDay(); }
-  viewKey = key; expanded = null; closeXForm(); closeSkip();
+  viewKey = key; expanded = null; heroPin = null; closeXForm(); closeSkip();
   const o = lsRead(), cached = o.dias && o.dias[key];
   if (mode === 'local') day = normalizeDay(cached, key);
   else { const rec = (o.pending && o.pending[key] && cached) ? cached : (history.find(x => x && x.fecha === key) || cached); day = normalizeDay(rec, key); }
@@ -1272,7 +1288,27 @@ function tomaStatus(id, m){
   return 'next';
 }
 const pendingToma = t => !day.tomas[t.id].hecho && !day.tomas[t.id].omitida;
-function focusToma(m){ return orderedTomas().find(t => pendingToma(t) && tomaMin(t.id) >= m - 60) || null; }
+function tomaComplete(t){
+  if (pendingToma(t)) return false;
+  if (!tomaSupl(t, viewKey).every(k => day.supl[k])) return false;
+  if (t.id === 'desayuno'){ const due = hidroDueFor(viewKey); if (due && !due.hecha) return false; }
+  return true;
+}
+let heroPin = null;
+function focusToma(m){
+  const list = orderedTomas();
+  if (heroPin){
+    const i = list.findIndex(x => x.id === heroPin), t = list[i], next = list[i + 1];
+    if (t && !tomaComplete(t) && (!next || m < tomaMin(next.id) - 15)) return t;
+    heroPin = null;
+  }
+  /* una toma ya empezada con pastillas pendientes se queda abierta hasta que se acerque la siguiente */
+  for (let i = 0; i < list.length; i++){
+    const t = list[i], next = list[i + 1];
+    if (!pendingToma(t) && !tomaComplete(t) && tomaMin(t.id) <= m + 15 && (!next || m < tomaMin(next.id) - 15)) return t;
+  }
+  return list.find(t => pendingToma(t) && tomaMin(t.id) >= m - 60) || null;
+}
 
 function renderDial(m, f){
   const R = 96, C = 120;
@@ -1339,6 +1375,16 @@ function vegRow(){
   const v = vegLeft(viewKey);
   return `<li class="ck"><span class="info-ico">${ICON.leaf}</span><span class="ck-body"><span class="ck-title">Verduras permitidas</span><span class="ck-note">Libres: ${v.libres == null ? 'sin límite' : 'te quedan ' + fmtTazas(v.libres) + ' de 2 tazas'} · Moderación: ${fmtNum(v.restr)} de ${v.r.restrMax} g</span>${isToday() ? '<button class="link" data-act="plato">Ideas para tu plato</button>' : ''}</span></li>`;
 }
+const auxChip = (m, k) => { const on = !!day.aux[m][k]; return `<button class="chip${on ? ' is-on' : ''}" data-act="aux" data-id="${m}" data-k="${k}" aria-pressed="${on}">${on ? ICON.check : ''}${AUX[k].corto}</button>`; };
+function auxRow(id){
+  return `<li class="ck ck-aux"><span class="info-ico">${ICON.pill}</span><span class="ck-body"><span class="ck-title">Auxiliares <span class="ck-dose">· solo si comes fuera del plan</span></span><span class="ck-note">Cardispan 1 h antes o después · MCT con ${mealName(id)}. No cuentan como pendientes.</span><span class="chips">${AUX_KEYS.map(k => auxChip(id, k)).join('')}</span></span></li>`;
+}
+function auxboxHTML(){
+  let h = `<div class="aux-t">Auxiliares<span>Si comes carbohidratos u otra cosa fuera del plan: Cardispan 1 h antes o después y MCT con esa comida.</span></div>`;
+  h += AUX_MEALS.map(m => `<div class="aux-row"><span class="aux-meal">${tomaDef(m).nombre}</span><span class="chips">${AUX_KEYS.map(k => auxChip(m, k)).join('')}</span></div>`).join('');
+  if (day.extras.length && !auxCount(day)) h += `<p class="aux-warn">Anotaste algo fuera del plan y no hay auxiliares marcados.</p>`;
+  return h;
+}
 function checklistHTML(id, hero){
   const t = tomaDef(id), st = day.tomas[id], rows = [], sk = tomaSupl(t, viewKey);
   sk.filter(k => k === 'probio').forEach(k => rows.push(suplRow(k)));
@@ -1346,6 +1392,7 @@ function checklistHTML(id, hero){
   sk.filter(k => k !== 'probio').forEach(k => rows.push(suplRow(k)));
   if (id === 'desayuno') rows.push(hidroRow(viewKey));
   if (t.verduras) rows.push(vegRow());
+  if (t.aux) rows.push(auxRow(id));
   let h = `<ul class="checklist">${rows.join('')}</ul>`;
   if (hero){
     const due = id === 'desayuno' ? hidroDueFor(viewKey) : null;
@@ -1371,8 +1418,8 @@ function renderHero(){
   if (f){
     const diff = tomaMin(f.id) - m;
     hero.classList.toggle('is-now', diff <= 15);
-    c.innerHTML = `<span class="dial-eyebrow">${diff > 15 ? 'Siguiente' : 'Es hora'}</span><span class="dial-time">${config.horas[f.id]}</span><span class="dial-name">${f.nombre}</span><span class="dial-rel">${relText(diff)}</span>`;
-    b.innerHTML = checklistHTML(f.id, true);
+    c.innerHTML = `<span class="dial-eyebrow">${!pendingToma(f) ? 'Termina tu toma' : (diff > 15 ? 'Siguiente' : 'Es hora')}</span><span class="dial-time">${config.horas[f.id]}</span><span class="dial-name">${f.nombre}</span><span class="dial-rel">${relText(diff)}</span>`;
+    b.innerHTML = '<div data-toma="' + f.id + '">' + checklistHTML(f.id, true) + '</div>';
   } else {
     hero.classList.remove('is-now');
     const all = TOMA_IDS.every(id => day.tomas[id].hecho || day.tomas[id].omitida), nDone = TOMA_IDS.filter(id => day.tomas[id].hecho).length, first = orderedTomas()[0];
@@ -1401,8 +1448,9 @@ function renderTimeline(){
     if (t.verduras) parts.push('verduras');
     const sk = tomaSupl(t, viewKey);
     if (sk.length) parts.push(sk.map(k => SUPL[k].corto + (day.supl[k] ? ' ✓' : '')).join(', '));
+    if (t.aux){ const am = AUX_KEYS.filter(k => day.aux[t.id][k]); if (am.length) parts.push(am.map(k => AUX[k].corto + ' ✓').join(', ')); }
     if (t.id === 'desayuno'){ const due = hidroDueFor(viewKey); if (due) parts.push(HIDRO.corto + (due.hecha ? ' ✓' : '')); }
-    const badge = s === 'done' ? '<span class="badge b-done">Hecho</span>' : s === 'skip' ? '<span class="badge b-skip">Omitida</span>' : s === 'now' ? '<span class="badge b-now">Ahora</span>' : s === 'late' ? '<span class="badge b-late">Sin marcar</span>' : '';
+    const badge = s === 'done' ? (tomaComplete(t) ? '<span class="badge b-done">Hecho</span>' : '<span class="badge b-late">Faltan pastillas</span>') : s === 'skip' ? '<span class="badge b-skip">Omitida</span>' : s === 'now' ? '<span class="badge b-now">Ahora</span>' : s === 'late' ? '<span class="badge b-late">Sin marcar</span>' : '';
     return `<li class="trow is-${s}${exp ? ' is-open' : ''}">`
       + `<button class="hit${st.hecho ? ' is-checked' : ''}" role="checkbox" aria-checked="${st.hecho}" data-act="toggle-toma" data-id="${t.id}" aria-label="${t.nombre}, ${config.horas[t.id]}${st.omitida ? ', sobre omitido' : ''}">${st.omitida ? BOX_SKIP : BOX}</button>`
       + `<button class="trow-main" data-act="expand" data-id="${t.id}" aria-expanded="${exp}"><span class="trow-time">${config.horas[t.id]}</span><span class="trow-text"><span class="trow-name">${t.nombre}</span><span class="trow-sub">${parts.join(' · ')}</span></span>${badge}<span class="chev">${ICON.chev}</span></button>`
@@ -1445,6 +1493,7 @@ function renderExtras(){
     return `<li><button class="xitem" data-act="x-edit" data-id="${esc(x.id)}"><span class="x-time">${x.hora || '–'}</span><span class="x-main"><span class="x-que">${esc(x.que)}</span>${meta ? `<span class="x-meta">${esc(meta)}</span>` : ''}</span><span class="chev">${ICON.chev}</span></button></li>`;
   }).join('');
   list.hidden = !xs.length;
+  $('#auxbox').innerHTML = auxboxHTML();
   $('#xadd').hidden = !$('#xform').hidden;
 }
 function syncNotaInput(force){ const t = $('#nota-dia'); if (t && (force || document.activeElement !== t)) t.value = day.nota || ''; }
@@ -1494,7 +1543,7 @@ function saveX(){
   const editing = !!xEditing;
   if (editing){ const i = day.extras.findIndex(e => e.id === xEditing); if (i >= 0) day.extras[i] = item; else day.extras.push(item); }
   else { if (day.extras.length >= 40){ toast('Ya hay 40 registros en este día'); return; } day.extras.push(item); }
-  closeXForm(); changed(); toast(editing ? 'Registro actualizado' : 'Anotado para tu reporte');
+  closeXForm(); changed(); toast(editing ? 'Registro actualizado' : (auxCount(day) ? 'Anotado para tu reporte' : 'Anotado. Si tomaste Cardispan o MCT, márcalos en Auxiliares.'));
 }
 
 /* ================= Sobres omitidos ================= */
@@ -1624,7 +1673,7 @@ function renderHambre(){
     else small = c.fmt(day[q.k]) + ' / ' + c.fmt(c.min || c.max) + (c.unidad ? ' ' + c.unidad : '');
     return `<button class="qbtn" data-act="inc" data-k="${q.k}" data-v="${v}"><b>${b}</b><span>${q.s}</span><small>${small}</small></button>`;
   }).join('')}</div>`;
-  h += `<div class="card offplan"><div class="doc-t">¿Comiste algo fuera del plan?</div><div class="doc-s">Anótalo y saldrá en tu reporte para la Dra.</div><button class="btn btn-soft" data-act="x-new-today">Anotarlo</button></div>`;
+  h += `<div class="card offplan"><div class="doc-t">¿Comiste algo fuera del plan?</div><div class="doc-s">Anótalo para tu reporte y marca tus auxiliares: Cardispan 1 h antes o después y MCT con esa comida.</div><button class="btn btn-soft" data-act="x-new-today">Anotarlo</button></div>`;
   h += docCard();
   el.innerHTML = h;
 }
@@ -1667,7 +1716,7 @@ function renderResults(){
   const q = ($('#q') || {}).value || '', el = $('#results');
   if (norm(q).length < 2){ el.innerHTML = ''; return; }
   const res = searchItems(q), qq = esc(q.trim());
-  const ate = `<div class="r-ate"><span>¿Ya lo comiste?</span><button class="btn btn-small btn-soft" data-act="x-from" data-v="${qq}">Anotarlo fuera del plan</button></div>`;
+  const ate = `<p class="hint">Si lo comes, toma tus auxiliares: Cardispan 1 h antes o después y MCT con esa comida.</p><div class="r-ate"><span>¿Ya lo comiste?</span><button class="btn btn-small btn-soft" data-act="x-from" data-v="${qq}">Anotarlo fuera del plan</button></div>`;
   if (!res.length){
     el.innerHTML = `<div class="result"><div class="r-head"><span class="r-name">${qq}</span><span class="verdict v-nolista">No está en tu lista</span></div><p class="r-d">En la fase mixta solo se incorporan las verduras permitidas y la proteína animal (1 vez al día), además de tus productos. Antes de agregar algo nuevo, pregúntale a la Dra.</p><a class="btn btn-line btn-small" style="align-self:flex-start" href="${WA_LINK}" target="_blank" rel="noopener">${ICON.chat}Escribirle por WhatsApp</a></div>` + ate;
     return;
@@ -1740,6 +1789,7 @@ function computeReport(map, desde, hasta){
     act: C(d => d.actividad),
     sleepN: sleeps.length, sleepAvg: sleeps.length ? sleeps.reduce((a, b) => a + b, 0) / sleeps.length : null, sleepOut: sleeps.filter(s => s < 6.5 || s > 8).length,
     extras, extrasDays: C(d => d.extras.length > 0),
+    auxCard: S(d => auxBy(d, 'card')), auxMct: S(d => auxBy(d, 'mct')), extrasNoAux: C(d => d.extras.length > 0 && auxCount(d) === 0),
     notas: rec.filter(r => r.d.nota && r.d.nota.trim()).map(r => ({ k:r.k, nota:r.d.nota.trim() }))
   };
 }
@@ -1765,22 +1815,24 @@ function summaryLines(R){
     ['Dynovance / Sérovance', R.dyn + ' / ' + R.ser + ' en total · ' + plural(R.prodOver, 'día', 'días') + ' arriba de 2'],
     ['Actividad física', R.act + ' de ' + R.n + ' días'],
     ['Sueño (6.5 a 8 h)', R.sleepN ? 'promedio ' + fmt1(R.sleepAvg) + ' h · ' + R.sleepOut + ' de ' + plural(R.sleepN, 'noche', 'noches') + ' fuera del rango' : 'sin registro'],
-    ['Fuera del plan', R.extras.length ? plural(R.extras.length, 'registro', 'registros') + ' en ' + plural(R.extrasDays, 'día', 'días') : 'ninguno']
+    ['Fuera del plan', R.extras.length ? plural(R.extras.length, 'registro', 'registros') + ' en ' + plural(R.extrasDays, 'día', 'días') : 'ninguno'],
+    ['Auxiliares (Cardispan / MCT)', (R.auxCard || R.auxMct) ? 'Cardispan ' + R.auxCard + ' · MCT ' + R.auxMct + (R.extrasNoAux ? ' · ' + plural(R.extrasNoAux, 'día', 'días') + ' fuera del plan sin auxiliares' : '') : (R.extrasNoAux ? 'ninguno · ' + plural(R.extrasNoAux, 'día', 'días') + ' fuera del plan sin auxiliares' : 'ninguno')]
   ];
   return L.filter(Boolean);
 }
-const RHEAD = ['Fecha', 'Tomas', 'Omit.', 'Supl.', 'Prot. an.', 'Agua', 'Aceite', 'Libres', 'Moder.', 'Sueño', 'Activ.', 'Fuera'];
+const RHEAD = ['Fecha', 'Tomas', 'Omit.', 'Supl.', 'Prot. an.', 'Agua', 'Aceite', 'Libres', 'Moder.', 'Sueño', 'Activ.', 'Fuera', 'Aux.'];
 function dayCells(r){
   const k = fmtKeyShort(r.k);
-  if (!r.d) return { cells:[k, '–', '–', '–', '–', '–', '–', '–', '–', '–', '–', '–'], flags:[] };
+  if (!r.d) return { cells:[k].concat(Array(RHEAD.length - 1).fill('–')), flags:[] };
   const d = r.d, ru = rulesOf(r.k), sk = suplKeysFor(r.k);
   const t = TOMA_IDS.filter(id => d.tomas[id].hecho).length, om = TOMA_IDS.filter(id => d.tomas[id].omitida).length, s = sk.filter(x => d.supl[x]).length;
   const aniId = TOMA_IDS.find(id => d.tomas[id].animal);
   const ani = aniId ? animalShort(aniId, d.tomas[aniId].animal) + (aniId === 'cena' ? ' (C)' : '') : '–';
   const sOut = d.sueno != null && (d.sueno < 6.5 || d.sueno > 8);
+  const ac = auxBy(d, 'card'), am = auxBy(d, 'mct'), auxTxt = (ac || am) ? 'C' + ac + ' M' + am : '–';
   return {
-    cells:[k, t + '/6', String(om), s + '/' + sk.length, ani, fmt1(d.agua / 1000) + ' L', fmtNum(d.aceite), fmtTazas(d.libres), fmtNum(d.restr) + ' g', d.sueno == null ? '–' : fmtNum(d.sueno) + ' h', d.actividad ? 'Sí' : 'No', String(d.extras.length)],
-    flags:[false, t < 6, om > 0, s < sk.length, false, d.agua < 2000, d.aceite < 2, ru.libresMax != null && d.libres > ru.libresMax, d.restr > ru.restrMax, sOut, !d.actividad, d.extras.length > 0]
+    cells:[k, t + '/6', String(om), s + '/' + sk.length, ani, fmt1(d.agua / 1000) + ' L', fmtNum(d.aceite), fmtTazas(d.libres), fmtNum(d.restr) + ' g', d.sueno == null ? '–' : fmtNum(d.sueno) + ' h', d.actividad ? 'Sí' : 'No', String(d.extras.length), auxTxt],
+    flags:[false, t < 6, om > 0, s < sk.length, false, d.agua < 2000, d.aceite < 2, ru.libresMax != null && d.libres > ru.libresMax, d.restr > ru.restrMax, sOut, !d.actividad, d.extras.length > 0, d.extras.length > 0 && !(ac || am)]
   };
 }
 function reportHTML(R){
@@ -1788,7 +1840,7 @@ function reportHTML(R){
   let h = `<div class="card rhead"><div class="rh-name">${esc(pacienteName())}</div><div class="rh-sub">DAP · ${esc(faseText(R))} · ${esc(periodText(R.desde, R.hasta))}</div><div class="rh-sub">${plural(R.n, 'día', 'días')} con registro de ${R.dias}</div></div>`;
   h += `<div class="rsum">${summaryLines(R).map(([k, v]) => `<div class="rs"><span class="rs-k">${esc(k)}</span><span class="rs-v">${esc(v)}</span></div>`).join('')}</div>`;
   h += `<h3 class="sec">Por día</h3><div class="tablebox"><table class="rtable"><thead><tr>${RHEAD.map(x => `<th scope="col">${x}</th>`).join('')}</tr></thead><tbody>${R.rows.map(r => { const c = dayCells(r); return `<tr${r.d ? '' : ' class="is-empty"'}>${c.cells.map((v, i) => `<td${c.flags[i] ? ' class="flag"' : ''}>${esc(v)}</td>`).join('')}</tr>`; }).join('')}</tbody></table></div>`;
-  h += `<p class="hint">En ámbar, lo que quedó fuera de la meta o del máximo de ese día. «(C)» en proteína animal: fue en la cena. Los promedios cuentan solo los días con registro.</p>`;
+  h += `<p class="hint">En ámbar, lo que quedó fuera de la meta o del máximo de ese día. «(C)» en proteína animal: fue en la cena. Aux.: C = Cardispan, M = MCT; en ámbar si hubo algo fuera del plan sin auxiliares. Los promedios cuentan solo los días con registro.</p>`;
   if (R.animales.length) h += `<h3 class="sec">Proteína animal</h3><ul class="rows">${R.animales.map(a => `<li class="row"><span class="row-main"><span class="row-n">${esc(animalLabel(a.id, { tipo:a.tipo }))}</span><span class="row-d">${esc(fmtKeyShort(a.k))} · ${esc(a.nombre)}${a.hecho ? '' : ' · sin marcar como comida'}</span></span></li>`).join('')}</ul>`;
   if (R.omit.length) h += `<h3 class="sec">Sobres omitidos</h3><ul class="rows">${R.omit.map(x => `<li class="row"><span class="row-main"><span class="row-n">${esc(cap(omitDesc(x.o)))}</span><span class="row-d">${esc(fmtKeyShort(x.k))} · ${esc(x.nombre)} ${x.hora}${x.o.nota ? ' · ' + esc(x.o.nota) : ''}</span></span></li>`).join('')}</ul>`;
   if (R.extras.length) h += `<h3 class="sec">Fuera del plan</h3><ul class="rows">${R.extras.map(x => `<li class="row"><span class="row-main"><span class="row-n">${esc(x.que)}${x.cuanto ? ' · ' + esc(x.cuanto) : ''}</span><span class="row-d">${esc(fmtKeyShort(x.k))}${x.hora ? ' · ' + x.hora : ''}${x.motivo ? ' · ' + esc(x.motivo) : ''}${x.nota ? ' · ' + esc(x.nota) : ''}</span></span></li>`).join('')}</ul>`;
@@ -1801,7 +1853,7 @@ function reportText(R){
   const conDatos = R.rows.filter(r => r.d);
   if (conDatos.length){
     L.push('', '*Por día*');
-    conDatos.forEach(r => { const d = r.d, c = dayCells(r).cells, om = Number(c[2]); L.push('• ' + c[0] + ': ' + c[1] + ' tomas' + (om ? ' (' + plural(om, 'sobre omitido', 'sobres omitidos') + ')' : '') + (c[4] !== '–' ? ', prot. animal ' + c[4] : '') + ', ' + c[3] + ' supl., agua ' + c[5] + ', aceite ' + c[6] + ' cdas' + (d.sueno != null ? ', sueño ' + c[9] : '') + (d.actividad ? ', actividad' : '')); });
+    conDatos.forEach(r => { const d = r.d, c = dayCells(r).cells, om = Number(c[2]); L.push('• ' + c[0] + ': ' + c[1] + ' tomas' + (om ? ' (' + plural(om, 'sobre omitido', 'sobres omitidos') + ')' : '') + (c[4] !== '–' ? ', prot. animal ' + c[4] : '') + ', ' + c[3] + ' supl., agua ' + c[5] + ', aceite ' + c[6] + ' cdas' + (d.sueno != null ? ', sueño ' + c[9] : '') + (d.actividad ? ', actividad' : '') + (c[12] !== '–' ? ', auxiliares ' + c[12] : '')); });
   }
   if (R.animales.length){ L.push('', '*Proteína animal*'); R.animales.forEach(a => L.push('• ' + fmtKeyShort(a.k) + ', ' + a.nombre.toLowerCase() + ': ' + animalLabel(a.id, { tipo:a.tipo }))); }
   if (R.omit.length){ L.push('', '*Sobres omitidos*'); R.omit.forEach(x => L.push('• ' + fmtKeyShort(x.k) + ', ' + x.nombre + ' (' + x.hora + '): ' + omitDesc(x.o) + (x.o.nota ? ' · ' + x.o.nota : ''))); }
@@ -1840,7 +1892,7 @@ function buildPDF(jsPDF, R, paciente, inicio){
   });
 
   section('Detalle por día');
-  const widths = [64, 36, 34, 36, 46, 40, 38, 38, 40, 38, 36, 34], total = widths.reduce((a, b) => a + b, 0), xs = [];
+  const widths = [60, 34, 32, 34, 44, 38, 36, 36, 38, 36, 34, 32, 40], total = widths.reduce((a, b) => a + b, 0), xs = [];
   let x = M; widths.forEach(w => { xs.push(x); x += w * CW / total; });
   const rowH = 17;
   const header = () => { doc.setFillColor(SUNK[0], SUNK[1], SUNK[2]); doc.rect(M, y - 12, CW, rowH, 'F'); doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); col(INK); RHEAD.forEach((hd, i) => doc.text(T(hd), xs[i] + 4, y)); y += rowH; };
@@ -1854,7 +1906,7 @@ function buildPDF(jsPDF, R, paciente, inicio){
     y += rowH;
   });
   ensure(16); doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); col(INK2);
-  doc.text(T('En color, lo que quedó fuera de la meta o del máximo de ese día. "(C)" en proteína animal: fue en la cena. Los promedios cuentan solo los días con registro.'), M, y + 2); y += 14;
+  { const nl = doc.splitTextToSize(T('En color, lo que quedó fuera de la meta o del máximo de ese día. "(C)" en proteína animal: fue en la cena. Aux.: C = Cardispan, M = MCT; en color si hubo algo fuera del plan sin auxiliares. Los promedios cuentan solo los días con registro.'), CW); ensure(11 * nl.length + 4); doc.text(nl, M, y + 2); y += 11 * nl.length + 4; }
 
   const listBlock = (title, items, head, body) => {
     if (!items.length) return;
@@ -1942,7 +1994,6 @@ function renderPlan(force){
   fill('#inicio', config.inicio || ''); const ini = $('#inicio'); if (ini) ini.max = todayKey();
   fill('#fase2', config.fase2Desde || '');
   fill('#paciente', config.paciente);
-  fill('#supl-desde', config.suplDesde || '');
   fill('#hidro-inicio', config.hidroferol.inicio || '');
   const note = $('#inicio-note'); if (note) note.textContent = config.inicio ? 'Hoy es tu día ' + dayNumber(todayKey()) + '. Si llenas días anteriores, se ajusta sola.' : 'Se guarda sola el primer día que marques algo.';
   const t = todayKey(), s = hidroSchedule(), next = s.find(x => !x.hecha), done = s.filter(x => x.hecha).length;
@@ -2121,6 +2172,7 @@ function act(a, el){
       renderReport(); break;
     }
     case 'r-pdf': doPDF(el); break;
+    case 'aux': { const k = el.dataset.k; if (!day.aux[id] || AUX_KEYS.indexOf(k) < 0) break; day.aux[id][k] = !day.aux[id][k]; changed(); break; }
     case 'bk-export': exportBackup(el); break;
     case 'r-copy': doCopyReport(); break;
     case 'reset-horas': config.horas = defaultConfig().horas; saveConfig(); renderAll(); renderPlan(true); toast('Horarios de la hoja restaurados'); break;
@@ -2130,6 +2182,7 @@ function act(a, el){
 function wire(){
   document.addEventListener('click', e => {
     const el = e.target.closest('[data-act]'); if (!el || el.disabled) return;
+    const hp = el.closest('#hero-body [data-toma]'); if (hp && isToday()) heroPin = hp.dataset.toma;
     if (el.getAttribute('aria-disabled') === 'true'){
       if (el.dataset.act === 'set-prod'){ const p = el.dataset.prod; toast('Ya llevas ' + TOPE[p] + ' ' + p + ' en el día: es el máximo de tu hoja.'); }
       if (el.dataset.act === 'set-animal'){ const o = animalElsewhere(el.dataset.id); toast('Proteína animal solo 1 vez al día' + (o ? ': ya la tienes en ' + mealName(o) + '.' : '.')); }
@@ -2146,7 +2199,6 @@ function wire(){
     if (t.id === 'inicio' && isKey(t.value)){ config.inicio = t.value > todayKey() ? todayKey() : t.value; saveConfig(); renderAll(); renderPlan(true); }
     if (t.id === 'fase2' && isKey(t.value)){ config.fase2Desde = t.value; saveConfig(); lastReport = null; rDesde = ''; renderAll(); renderPlan(true); }
     if (t.id === 'hidro-inicio' && isKey(t.value)){ setHidroInicio(t.value); renderAll(); renderPlan(true); }
-    if (t.id === 'supl-desde' && isKey(t.value)){ config.suplDesde = t.value; saveConfig(); lastReport = null; renderAll(); renderPlan(true); }
     if (t.id === 'paciente'){ config.paciente = str(t.value, 80) || DEFAULT_PACIENTE; saveConfig(); renderPlan(true); }
     if (t.id === 'bk-file'){ const f = t.files && t.files[0]; t.value = ''; importBackup(f); }
     if (t.id === 'r-desde' || t.id === 'r-hasta'){
